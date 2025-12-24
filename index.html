@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pseudocode Interpreter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* For custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-inset);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-primary);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-secondary);
+    }
+
+    /* Global transition for smoother UI updates */
+    * {
+      transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    }
+
+    .font-mono, [class*="font-mono"] {
+      font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;
+    }
+
+    /* Theme Variables */
+    :root {
+      /* Neon Night Theme (Default) */
+      /* Base */
+      --bg-primary: #10121A;
+      --bg-secondary: #181A24;
+      --bg-tertiary: #222533;
+      --bg-hover: #2c2f40;
+      --bg-inset: #0c0e14;
+      
+      /* Text */
+      --text-primary: #e0e2f0;
+      --text-secondary: #a0a3b8;
+      --text-muted: #6b6e82;
+      --text-inverted: #FFFFFF;
+
+      /* Borders */
+      --border-primary: #2a2d3d;
+      --border-secondary: #40445c;
+      --border-focus: var(--accent-primary);
+
+      /* Accents */
+      --accent-primary: #2563eb; /* Main Neon Accent - Blue */
+      --accent-primary-hover: #1d4ed8;
+      --accent-secondary: #7e7deb; /* Blue/Purple for Debug, etc. */
+      --accent-secondary-hover: #6968d2;
+      --accent-red: #ff5572;
+      --accent-red-hover: #ff3859;
+      --accent-yellow: #f5b900;
+      --accent-green: #2563eb; /* Action Green is now Blue */
+      --accent-green-hover: #1d4ed8;
+
+      /* UI Specific */
+      --disabled-bg: #222533;
+      --disabled-text: #6b6e82;
+      --caret-color: var(--accent-primary);
+      --shadow-color: rgba(37, 99, 235, 0.3);
+      --shadow-color-secondary: rgba(126, 125, 235, 0.3);
+      --shadow-color-red: rgba(255, 85, 114, 0.3);
+      --shadow-color-green: rgba(37, 99, 235, 0.3);
+
+      /* Syntax Highlighting (Dracula-inspired) */
+      --syntax-keyword: #ff79c6;      /* Pink */
+      --syntax-dataType: #8be9fd;     /* Cyan */
+      --syntax-string: #f1fa8c;       /* Yellow */
+      --syntax-number: #bd93f9;       /* Purple */
+      --syntax-operator: #ff79c6;      /* Pink */
+      --syntax-identifier: #e0e2f0;    /* White */
+      --syntax-comment: #6272a4;       /* Greyish Blue */
+      --syntax-builtin: #50fa7b;       /* Green */
+    }
+
+    html[data-theme='dark'] {
+      /* Onyx Theme (High Contrast Dark) */
+      --bg-primary: #000000;
+      --bg-secondary: #121212;
+      --bg-tertiary: #1E1E1E;
+      --bg-hover: #2C2C2C;
+      --bg-inset: #000000;
+
+      --text-primary: #FFFFFF;
+      --text-secondary: #E0E0E0;
+      --text-muted: #888888;
+      --text-inverted: #000000;
+
+      --border-primary: #2C2C2C;
+      --border-secondary: #424242;
+      --border-focus: var(--accent-primary);
+
+      --accent-primary: #ffcc00;
+      --accent-primary-hover: #e6b800;
+      --accent-secondary: #3399ff;
+      --accent-secondary-hover: #1a8cff;
+      --accent-red: #ff4d4d;
+      --accent-red-hover: #ff3333;
+      --accent-yellow: #ffcc00;
+      --accent-green: #4cd964;
+      --accent-green-hover: #3cc251;
+
+      --disabled-bg: #2C2C2C;
+      --disabled-text: #888888;
+      --caret-color: var(--accent-primary);
+      --shadow-color: rgba(255, 204, 0, 0.2);
+      --shadow-color-secondary: rgba(51, 153, 255, 0.2);
+      --shadow-color-red: rgba(255, 77, 77, 0.2);
+      --shadow-color-green: rgba(76, 217, 100, 0.2);
+
+      /* Syntax Highlighting (Monokai-inspired) */
+      --syntax-keyword: #f92672;
+      --syntax-dataType: #66d9ef;
+      --syntax-string: #e6db74;
+      --syntax-number: #ae81ff;
+      --syntax-operator: #f92672;
+      --syntax-identifier: #f8f8f2;
+      --syntax-comment: #75715e;
+      --syntax-builtin: #a6e22e;
+    }
+
+    html[data-theme='light'] {
+      /* Daybreak Theme (Modern Light) */
+      --bg-primary: #f8f9fa;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e9ecef;
+      --bg-hover: #dee2e6;
+      --bg-inset: #f0f2f5;
+
+      --text-primary: #212529;
+      --text-secondary: #495057;
+      --text-muted: #868e96;
+      --text-inverted: #ffffff;
+
+      --border-primary: #dee2e6;
+      --border-secondary: #ced4da;
+      --border-focus: var(--accent-primary);
+
+      --accent-primary: #007aff;
+      --accent-primary-hover: #0062cc;
+      --accent-secondary: #5856d6;
+      --accent-secondary-hover: #4341b8;
+      --accent-red: #ff3b30;
+      --accent-red-hover: #e02c22;
+      --accent-yellow: #ff9500;
+      --accent-green: #34c759;
+      --accent-green-hover: #29a347;
+
+      --disabled-bg: #e9ecef;
+      --disabled-text: #adb5bd;
+      --caret-color: var(--accent-primary);
+      --shadow-color: rgba(0, 122, 255, 0.2);
+      --shadow-color-secondary: rgba(88, 86, 214, 0.2);
+      --shadow-color-red: rgba(255, 59, 48, 0.2);
+      --shadow-color-green: rgba(52, 199, 89, 0.2);
+
+      /* Syntax Highlighting (VS Code Light-inspired) */
+      --syntax-keyword: #af00db;
+      --syntax-dataType: #0000ff;
+      --syntax-string: #a31515;
+      --syntax-number: #098658;
+      --syntax-operator: #af00db;
+      --syntax-identifier: #24292e;
+      --syntax-comment: #008000;
+      --syntax-builtin: #22863a;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "dagre": "https://cdn.skypack.dev/dagre"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)]">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

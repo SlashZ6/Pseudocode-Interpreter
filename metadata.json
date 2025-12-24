@@ -1,0 +1,5 @@
+{
+  "name": "Pseudocode Interpreter",
+  "description": "An offline pseudocode interpreter and runtime environment based on the syntax from 'Starting out with Programming Logic and Design'. Write pseudocode with line numbers in the editor and see the output in the console. The interpreter includes robust error handling for syntax and logic issues.",
+  "requestFramePermissions": []
+}
